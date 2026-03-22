@@ -35,7 +35,7 @@ export function Sidebar() {
         ${isMobile ? 'fixed' : 'relative'} 
         ${isMobile ? 'z-50' : ''}
         ${isMobile ? (isSidebarOpen ? 'translate-x-0' : '-translate-x-full') : ''}
-        w-64 h-[calc(100vh-3.5rem)] border-r border-zinc-800 bg-zinc-950/30 flex flex-col transition-transform duration-200
+        w-64 h-[calc(100vh-3.5rem)] border-r border-zinc-800 bg-black flex flex-col transition-transform duration-200
       `}>
         <div className="p-4 border-b border-zinc-800/50">
           <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
