@@ -39,7 +39,7 @@ export const useMemoStore = create<MemoStore>((set) => ({
   setMemos: (memos) => set({ memos }),
   addMemo: (memo) => set((state) => ({ memos: [...state.memos, memo] })),
   removeMemo: (id) => set((state) => ({ memos: state.memos.filter((m) => m.id !== id) })),
-  setSelectedCategory: (category) => set({ selectedCategory: category, selectedFolder: null, selectedSubfolder: null }),
+  setSelectedCategory: (category) => set({ selectedCategory: category, selectedFolder: null, selectedSubfolder: null, searchQuery: '', searchResults: [], ragAnswer: null }),
   setSelectedFolder: (folder) => set({ selectedFolder: folder, selectedSubfolder: null }),
   setSelectedSubfolder: (subfolder) => set({ selectedSubfolder: subfolder }),
   setSearchQuery: (query) => set({ searchQuery: query }),
