@@ -5,7 +5,7 @@ export interface Memo {
   source: 'upload' | 'bookmark' | 'note';
   url?: string;
   fileType?: string;
-  filePath?: string;
+  fileUrl?: string;
   category: string;
   folder: string;
   subfolder?: string;

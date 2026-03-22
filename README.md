@@ -29,6 +29,7 @@ Your personal knowledge base with semantic search and Retrieval-Augmented Genera
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **AI:** OpenAI (text-embedding-3-small, GPT-4o-mini)
+- **Storage:** Vercel Blob (file uploads)
 - **State:** Zustand
 - **Storage:** Local JSON (easily upgradable to ChromaDB or Pinecone)
 
@@ -65,13 +66,15 @@ Copy the example environment file:
 cp .env.example .env.local
 ```
 
-Open `.env.local` and add your OpenAI API key:
+Open `.env.local` and add your keys:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
 ```
 
-You can get an API key from https://platform.openai.com/api-keys
+- **OpenAI API key:** Get from https://platform.openai.com/api-keys
+- **Vercel Blob token:** Get from Vercel dashboard → Settings → Environment Variables → `BLOB_READ_WRITE_TOKEN`
 
 ### 4. Start the development server
 

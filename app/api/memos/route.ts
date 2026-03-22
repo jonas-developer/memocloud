@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { put } from '@vercel/blob';
 import { v4 as uuidv4 } from 'uuid';
 import { addMemo } from '@/lib/db';
 import { generateEmbedding } from '@/lib/openai';
-
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,30 +24,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure uploads directory exists
-    if (!fs.existsSync(UPLOADS_DIR)) {
-      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-    }
-
-    let filePath: string | undefined;
+    let fileUrl: string | undefined;
     let fileType: string | undefined;
     let extractedContent = content || '';
 
-    // Handle file upload
+    // Handle file upload with Vercel Blob
     if (file && file.size > 0) {
       const ext = file.name.split('.').pop() || 'txt';
       fileType = ext;
-      const fileName = `${uuidv4()}.${ext}`;
-      const fullPath = path.join(UPLOADS_DIR, fileName);
+      const blobFileName = `${uuidv4()}.${ext}`;
       
-      // Write file to disk
-      const buffer = Buffer.from(await file.arrayBuffer());
-      fs.writeFileSync(fullPath, buffer);
+      // Upload to Vercel Blob
+      const blob = await put(blobFileName, file, {
+        access: 'public',
+      });
       
-      filePath = `/uploads/${fileName}`;
+      fileUrl = blob.url;
+
+      // For now, mark that extraction is pending
+      if (!extractedContent) {
+        extractedContent = `[Uploaded file: ${file.name}] (Content extraction will happen on download)`;
+      }
     }
 
-    // For bookmark URLs, fetch content (simplified)
+    // For bookmark URLs, fetch content
     if (source === 'bookmark' && url) {
       try {
         const response = await fetch(url);
@@ -59,11 +56,6 @@ export async function POST(request: NextRequest) {
       } catch (e) {
         console.error('Failed to fetch URL:', e);
       }
-    }
-
-    // For now, if no content provided and it's a file upload, note that needs parsing
-    if (!extractedContent && file) {
-      extractedContent = `[Uploaded file: ${file.name}] - Content extraction pending`;
     }
 
     // Generate embedding
@@ -76,7 +68,7 @@ export async function POST(request: NextRequest) {
       source: (source || 'note') as 'upload' | 'bookmark' | 'note',
       url: url || undefined,
       fileType,
-      filePath: filePath || undefined,
+      fileUrl: fileUrl || undefined,
       category,
       folder,
       subfolder: subfolder || undefined,

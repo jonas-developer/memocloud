@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@vercel/blob": "^2.3.1",
     "chromadb": "^3.4.0",
     "langchain": "^1.2.36",
     "mammoth": "^1.12.0",

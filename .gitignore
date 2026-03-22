@@ -40,6 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local uploads (user content)
-/uploads/
+# local data (user content - use Vercel Blob in production)
 /data/

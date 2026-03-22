@@ -51,6 +51,16 @@ export function MemoCard({ memo }: MemoCardProps) {
                   {memo.url}
                 </a>
               )}
+              {memo.fileUrl && (
+                <a
+                  href={memo.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 truncate max-w-[200px]"
+                >
+                  📥 Download file
+                </a>
+              )}
             </div>
             <span>{formatDate(memo.createdAt)}</span>
           </div>
