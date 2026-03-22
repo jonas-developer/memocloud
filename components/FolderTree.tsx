@@ -2,15 +2,16 @@
 
 import { useMemoStore } from '@/stores/memoStore';
 import { FolderNode } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
-function FolderItem({ node, level = 0 }: { node: FolderNode; level?: number }) {
+function FolderItem({ node, level = 0, memoCounts }: { node: FolderNode; level?: number; memoCounts: Record<string, number> }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { selectedCategory, selectedFolder, selectedSubfolder, setSelectedCategory, setSelectedFolder, setSelectedSubfolder } = useMemoStore();
+  const { selectedCategory, setSelectedCategory, setSelectedFolder, setSelectedSubfolder } = useMemoStore();
 
   const isSelected = selectedCategory === node.name;
   const hasSubfolders = node.subfolders && node.subfolders.length > 0;
   const paddingLeft = 12 + level * 16;
+  const count = memoCounts[node.name] || 0;
 
   return (
     <div>
@@ -41,7 +42,7 @@ function FolderItem({ node, level = 0 }: { node: FolderNode; level?: number }) {
         {!hasSubfolders && <span className="w-4" />}
         <span className="truncate">{node.name}</span>
         <span className="ml-auto text-xs text-zinc-600">
-          {node.memos?.length || 0}
+          {count}
         </span>
       </div>
       {isOpen && hasSubfolders && (
@@ -52,6 +53,7 @@ function FolderItem({ node, level = 0 }: { node: FolderNode; level?: number }) {
               node={sub}
               parent={node.name}
               level={level + 1}
+              memoCounts={memoCounts}
             />
           ))}
         </div>
@@ -60,14 +62,15 @@ function FolderItem({ node, level = 0 }: { node: FolderNode; level?: number }) {
   );
 }
 
-function SubfolderItem({ node, parent, level }: { node: FolderNode; parent: string; level: number }) {
+function SubfolderItem({ node, parent, level, memoCounts }: { node: FolderNode; parent: string; level: number; memoCounts: Record<string, number> }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { selectedCategory, selectedFolder, selectedSubfolder, setSelectedCategory, setSelectedFolder, setSelectedSubfolder } = useMemoStore();
+  const { selectedCategory, selectedFolder, setSelectedCategory, setSelectedFolder, setSelectedSubfolder } = useMemoStore();
 
   const isSelectedFolder = selectedFolder === node.name && selectedCategory === parent;
-  const isSelectedSubfolder = selectedSubfolder === node.name && selectedFolder === parent;
   const hasSubfolders = node.subfolders && node.subfolders.length > 0;
   const paddingLeft = 12 + level * 16;
+  const key = `${parent}:${node.name}`;
+  const count = memoCounts[key] || 0;
 
   return (
     <div>
@@ -98,7 +101,7 @@ function SubfolderItem({ node, parent, level }: { node: FolderNode; parent: stri
         {!hasSubfolders && <span className="w-4" />}
         <span className="truncate">{node.name}</span>
         <span className="ml-auto text-xs text-zinc-600">
-          {node.memos?.length || 0}
+          {count}
         </span>
       </div>
     </div>
@@ -106,13 +109,46 @@ function SubfolderItem({ node, parent, level }: { node: FolderNode; parent: stri
 }
 
 export function FolderTree() {
-  const { folderStructure } = useMemoStore();
+  const { folderStructure, memos } = useMemoStore();
   const categories = folderStructure.categories;
+
+  // Calculate memo counts by category and folder
+  const memoCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    
+    // Category counts
+    categoriesWork: for (const catName of Object.keys(categories)) {
+      const cat = categories[catName];
+      let count = 0;
+      
+      // Count memos in this category
+      for (const memo of memos) {
+        if (memo.category === catName) {
+          count++;
+        }
+      }
+      counts[catName] = count;
+      
+      // Folder counts (Category:Folder)
+      for (const folder of cat.subfolders) {
+        const key = `${catName}:${folder.name}`;
+        let folderCount = 0;
+        for (const memo of memos) {
+          if (memo.category === catName && memo.folder === folder.name) {
+            folderCount++;
+          }
+        }
+        counts[key] = folderCount;
+      }
+    }
+    
+    return counts;
+  }, [memos, categories]);
 
   return (
     <div className="space-y-0.5">
       {Object.values(categories).map((cat) => (
-        <FolderItem key={cat.name} node={cat} />
+        <FolderItem key={cat.name} node={cat} memoCounts={memoCounts} />
       ))}
     </div>
   );
