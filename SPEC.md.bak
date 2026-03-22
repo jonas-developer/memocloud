@@ -1,0 +1,54 @@
+# MemoCloud - Personal Knowledge Base with RAG
+
+**Demo:** https://memocloud.io
+
+## Core Concept
+A "second brain" where you can upload documents, bookmarks, and notes — then search using natural language (semantic search) and get AI-assisted answers backed by your own knowledge.
+
+---
+
+## Tech Stack
+- **Frontend:** Next.js 15 (App Router) + TypeScript + Tailwind CSS
+- **AI/ML:** OpenAI (embeddings + GPT)
+- **RAG Framework:** LangChain
+- **Vector DB:** ChromaDB (local)
+- **File Processing:** pdf-parse, mammoth (DOCX)
+
+## Data Model
+
+```typescript
+interface Memo {
+  id: string;
+  title: string;
+  content: string;
+  source: 'upload' | 'bookmark' | 'note';
+  url?: string;
+  fileType?: string;
+  category: string;
+  folder: string;
+  subfolder?: string;
+  createdAt: Date;
+}
+```
+
+## UI
+- Dark theme (#0a0a0f background)
+- Sidebar with folder tree
+- Search bar + folder navigation
+- Search results: title, URL/source, datetime below
+
+## Features
+1. Create memo (upload PDF/DOCX, bookmark URL, or note)
+2. Folder tree navigation
+3. Semantic search (embeddings)
+4. RAG query mode with GPT-4
+
+## Acceptance Criteria
+- [ ] Can create memo with title + folder
+- [ ] Can upload PDF/DOCX files
+- [ ] Can add bookmark (URL)
+- [ ] Can write free-text note
+- [ ] Folder tree displays and navigates
+- [ ] Search returns results with title, URL, datetime
+- [ ] Semantic search works by meaning
+- [ ] RAG mode feeds context to LLM
