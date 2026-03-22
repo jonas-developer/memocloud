@@ -54,7 +54,7 @@ export async function searchMemos(query: string, limit = 10): Promise<SearchResu
   return results.map(({ embedding, ...rest }) => rest as SearchResult);
 }
 
-export async function addMemo(memo: { title: string; content: string; source: 'upload' | 'bookmark' | 'note'; url?: string; fileType?: string; category: string; folder: string; subfolder?: string; embedding?: number[] }): Promise<Memo> {
+export async function addMemo(memo: { title: string; content: string; source: 'upload' | 'bookmark' | 'note'; url?: string; fileType?: string; filePath?: string; category: string; folder: string; subfolder?: string; embedding?: number[] }): Promise<Memo> {
   const memos = loadMemos();
   
   const newMemo: Memo = {

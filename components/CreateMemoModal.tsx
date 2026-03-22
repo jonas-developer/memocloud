@@ -44,27 +44,19 @@ export function CreateMemoModal() {
 
     setIsLoading(true);
     try {
-      let fileContent = content;
-      let fileType: string | undefined;
-
-      if (file) {
-        fileType = file.name.split('.').pop();
-        fileContent = await file.text();
-      }
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('source', source);
+      if (url) formData.append('url', url);
+      if (file) formData.append('file', file);
+      formData.append('category', category);
+      formData.append('folder', folder);
+      if (subfolder) formData.append('subfolder', subfolder);
 
       const res = await fetch('/api/memos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content: fileContent || content,
-          source,
-          url: url || undefined,
-          fileType,
-          category,
-          folder,
-          subfolder: subfolder || undefined,
-        }),
+        body: formData,
       });
 
       if (res.ok) {
@@ -96,7 +88,6 @@ export function CreateMemoModal() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Source Type Tabs */}
           <div className="flex gap-2 p-1 bg-zinc-800/50 rounded-lg">
             {(['note', 'upload', 'bookmark'] as const).map((s) => (
               <button
@@ -114,7 +105,6 @@ export function CreateMemoModal() {
             ))}
           </div>
 
-          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-1">Title *</label>
             <input
@@ -127,7 +117,6 @@ export function CreateMemoModal() {
             />
           </div>
 
-          {/* Folder Selection */}
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">Category *</label>
@@ -170,7 +159,6 @@ export function CreateMemoModal() {
             </div>
           </div>
 
-          {/* Source-specific fields */}
           {source === 'upload' && (
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">File *</label>
@@ -192,28 +180,26 @@ export function CreateMemoModal() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://..."
-                required
+                required={source === 'bookmark'}
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
           )}
 
-          {/* Content */}
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-1">
-              Content {source === 'upload' ? '(optional override)' : '*'}
+              Content {source === 'upload' ? '(optional notes)' : '*'}
             </label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder={source === 'upload' ? 'Or type additional notes...' : 'Enter content...'}
-              required={source !== 'upload'}
+              placeholder={source === 'upload' ? 'Add notes about this file...' : 'Enter content...'}
+              required={source !== 'upload' && source !== 'bookmark'}
               rows={4}
               className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 resize-none"
             />
           </div>
 
-          {/* Submit */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
