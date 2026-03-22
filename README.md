@@ -1,68 +1,153 @@
-# MemoCloud 🧠☁️
+# MemoCloud
 
-**Demo:** https://memocloud.io
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind">
+  <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai" alt="OpenAI">
+</p>
 
-Your personal "second brain" with semantic search and AI-powered answers (RAG).
+Your personal knowledge base with semantic search and Retrieval-Augmented Generation (RAG). Store documents, bookmarks, and notes — then search using natural language and get AI-powered answers backed by your own knowledge.
+
+**Live Demo:** https://memocloud.io
 
 ---
 
 ## Features
 
-- **Create Memos** — Upload PDF/DOCX, bookmarks, or write notes
-- **Folder Organization** — Category → Folder → Subfolder hierarchy
-- **Semantic Search** — Search by meaning, not just keywords (OpenAI embeddings)
-- **RAG Mode** — Get AI answers based on your knowledge base
+- **Multiple Input Sources** — Upload PDF/DOCX files, save bookmarks, or write direct notes
+- **Folder Organization** — Hierarchical organization with Category → Folder → Subfolder
+- **Semantic Search** — Search by meaning, not just exact keywords, using OpenAI embeddings
+- **RAG Mode** — Get AI-generated answers with context from your knowledge base
+- **Dark Theme** — Modern, clean dark UI
 
 ---
 
 ## Tech Stack
 
-- Next.js 15 + TypeScript + Tailwind CSS
-- OpenAI (embeddings + GPT)
-- LangChain concepts (semantic search + RAG)
-- Local JSON storage (easily upgrade to ChromaDB/Pinecone)
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **AI:** OpenAI (text-embedding-3-small, GPT-4o-mini)
+- **State:** Zustand
+- **Storage:** Local JSON (easily upgradable to ChromaDB or Pinecone)
 
 ---
 
-## Getting Started
+## Prerequisites
 
-### 1. Install
+- Node.js 18+
+- npm or yarn
+- OpenAI API key
+
+---
+
+## Installation
+
+### 1. Clone the repository
 
 ```bash
+git clone https://github.com/jonas-developer/memocloud.git
 cd memocloud
+```
+
+### 2. Install dependencies
+
+```bash
 npm install
 ```
 
-### 2. Configure
+### 3. Configure environment variables
 
-Copy `.env.example` to `.env.local`:
+Copy the example environment file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Add your OpenAI API key:
+Open `.env.local` and add your OpenAI API key:
 
-```
-OPENAI_API_KEY=sk-...
+```env
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### 3. Run
+You can get an API key from https://platform.openai.com/api-keys
+
+### 4. Start the development server
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## How It Works
+## Usage
 
-1. **Add content** — Upload a file, paste a URL, or write a note
-2. **Auto-embed** — Content is converted to embeddings using OpenAI
-3. **Search** — Type a natural language query (e.g., "what did I save about TypeScript?")
-4. **RAG** — Enable "Use RAG" to get AI-generated answers with sources
+### Creating a Memo
+
+1. Click the **New Memo** button in the top right
+2. Choose the type:
+   - **Note** — Write directly in the app
+   - **Upload** — Upload PDF, DOCX, TXT, or MD files
+   - **Bookmark** — Paste a URL to save
+3. Fill in the title
+4. Select Category and Folder (required)
+5. Optionally add a Subfolder
+6. Click **Create Memo**
+
+### Searching
+
+1. Use the search bar at the top
+2. Type your query in natural language (e.g., "what did I save about TypeScript best practices?")
+3. Results show title, source URL, and timestamp
+4. Enable **Use RAG (AI Answer)** to get a synthesized answer
+
+### Navigating Folders
+
+- Click folders in the sidebar to view memos within them
+- Expand/collapse folders to see subfolders
+- The view shows all memos in the selected location
+
+---
+
+## API Endpoints
+
+### GET /api/memos
+
+List all memos, optionally filtered by folder:
+
+```
+GET /api/memos?category=Work&folder=Projects
+```
+
+### POST /api/memos
+
+Create a new memo:
+
+```json
+{
+  "title": "My Note",
+  "content": "Note content here",
+  "source": "note",
+  "category": "Work",
+  "folder": "Notes"
+}
+```
+
+### POST /api/search
+
+Semantic search:
+
+```json
+{
+  "query": "what did I save about TypeScript?",
+  "useRag": true
+}
+```
+
+Returns search results and optionally an AI-generated answer.
 
 ---
 
@@ -70,18 +155,61 @@ Open http://localhost:3000
 
 ```
 memocloud/
-├── app/
+├── app/                  # Next.js App Router
 │   ├── api/
-│   │   ├── memos/        # CRUD for memos
-│   │   └── search/       # Semantic search + RAG
-│   ├── page.tsx          # Main UI
-│   └── globals.css       # Dark theme
-├── components/            # UI components
-├── lib/
-│   ├── db.ts             # File-based DB
-│   ├── openai.ts         # OpenAI client
-│   └── types.ts          # TypeScript types
-└── stores/               # Zustand state
+│   │   ├── memos/       # Memo CRUD API
+│   │   └── search/      # Search + RAG API
+│   ├── globals.css      # Global styles
+│   ├── layout.tsx       # Root layout
+│   └── page.tsx         # Main page
+├── components/          # React components
+│   ├── CreateMemoModal.tsx
+│   ├── FolderTree.tsx
+│   ├── Header.tsx
+│   ├── MemoCard.tsx
+│   ├── SearchBar.tsx
+│   └── Sidebar.tsx
+├── lib/                  # Core logic
+│   ├── db.ts            # Data operations
+│   ├── openai.ts       # OpenAI client
+│   └── types.ts        # TypeScript types
+├── stores/              # Zustand stores
+├── .env.example        # Environment template
+├── next.config.ts       # Next.js config
+├── package.json
+└── tailwind.config.ts
+```
+
+---
+
+## Building for Production
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Push to GitHub
+2. Import project in Vercel
+3. Add `OPENAI_API_KEY` in Vercel environment variables
+4. Deploy
+
+### Other Platforms
+
+Build:
+```bash
+npm run build
+```
+
+Start:
+```bash
+npm start
 ```
 
 ---
@@ -89,3 +217,9 @@ memocloud/
 ## License
 
 MIT
+
+---
+
+## Contributing
+
+Contributions welcome! Open an issue or submit a PR.
