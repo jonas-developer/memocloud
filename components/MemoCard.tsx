@@ -69,7 +69,7 @@ export function MemoCard({ memo }: MemoCardProps) {
           </div>
           
           <div className="relative">
-            <p className={`text-sm text-zinc-500 mt-1 ${isLong && !isExpanded ? 'line-clamp-2' : ''}`}>
+            <p className={`text-sm text-zinc-500 mt-1 ${isLong && !isExpanded ? 'line-clamp-2' : ''} ${isExpanded ? 'whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto pr-2' : ''}`}>
               {memo.content}
             </p>
             {isLong && (
