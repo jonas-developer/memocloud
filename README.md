@@ -30,8 +30,8 @@ Your personal knowledge base with semantic search and Retrieval-Augmented Genera
 - **Styling:** Tailwind CSS
 - **AI:** OpenAI (text-embedding-3-small, GPT-4o-mini)
 - **Storage:** Vercel Blob (file uploads)
+- **Database:** Upstash Redis (persistent storage for memos & embeddings)
 - **State:** Zustand
-- **Storage:** Local JSON (easily upgradable to ChromaDB or Pinecone)
 
 ---
 
@@ -71,10 +71,13 @@ Open `.env.local` and add your keys:
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_upstash_rest_token
 ```
 
 - **OpenAI API key:** Get from https://platform.openai.com/api-keys
-- **Vercel Blob token:** Get from Vercel dashboard → Settings → Environment Variables → `BLOB_READ_WRITE_TOKEN`
+- **Vercel Blob token:** Get from Vercel dashboard → Storage → Blob →Settings → `BLOB_READ_WRITE_TOKEN`
+- **Upstash Redis:** Get from https://console.upstash.com → your database → Details → REST API
 
 ### 4. Start the development server
 
@@ -200,7 +203,11 @@ npm start
 
 1. Push to GitHub
 2. Import project in Vercel
-3. Add `OPENAI_API_KEY` in Vercel environment variables
+3. Add environment variables:
+   - `OPENAI_API_KEY`
+   - `BLOB_READ_WRITE_TOKEN`
+   - `UPSTASH_REDIS_REST_URL`
+   - `UPSTASH_REDIS_REST_TOKEN`
 4. Deploy
 
 ### Other Platforms
