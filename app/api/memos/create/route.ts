@@ -3,6 +3,7 @@ import { put } from '@vercel/blob';
 import { v4 as uuidv4 } from 'uuid';
 import { addMemo } from '@/lib/db';
 import { generateEmbedding } from '@/lib/openai';
+import * as cheerio from 'cheerio';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,12 +47,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // For bookmark URLs, fetch content
+    // For bookmark URLs, fetch and parse the page
     if (source === 'bookmark' && url) {
       try {
-        const response = await fetch(url);
-        const text = await response.text();
-        extractedContent = text.replace(/<[^>]*>/g, ' ').slice(0, 10000);
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; MemoCloud/1.0)',
+          },
+        });
+        const html = await response.text();
+        const $ = cheerio.load(html);
+        
+        // Remove scripts, styles, nav, footer, etc.
+        $('script, style, nav, footer, header, aside, noscript, iframe').remove();
+        
+        // Get title from page title tag or og:title
+        const pageTitle = $('title').text() || $('meta[property="og:title"]').attr('content') || '';
+        
+        // Get main content - prefer article, main, or body
+        let text = $('article').text() || $('main').text() || $('body').text();
+        
+        // Clean up whitespace
+        text = text.replace(/\s+/g, ' ').trim().slice(0, 10000);
+        
+        // Use page title if no custom title provided
+        if (!title && pageTitle) {
+          // Would need to handle this differently, but for now use URL as fallback
+        }
+        
+        extractedContent = text;
       } catch (e) {
         console.error('Failed to fetch URL:', e);
       }
