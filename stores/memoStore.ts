@@ -11,6 +11,7 @@ interface MemoStore {
   isSearching: boolean;
   ragAnswer: string | null;
   isModalOpen: boolean;
+  isSidebarOpen: boolean;
   folderStructure: FolderStructure;
   setMemos: (memos: Memo[]) => void;
   addMemo: (memo: Memo) => void;
@@ -23,6 +24,7 @@ interface MemoStore {
   setIsSearching: (isSearching: boolean) => void;
   setRagAnswer: (answer: string | null) => void;
   setIsModalOpen: (isOpen: boolean) => void;
+  setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
 export const useMemoStore = create<MemoStore>((set) => ({
@@ -35,6 +37,7 @@ export const useMemoStore = create<MemoStore>((set) => ({
   isSearching: false,
   ragAnswer: null,
   isModalOpen: false,
+  isSidebarOpen: false,
   folderStructure: DEFAULT_FOLDERS,
   setMemos: (memos) => set({ memos }),
   addMemo: (memo) => set((state) => ({ memos: [...state.memos, memo] })),
@@ -47,4 +50,5 @@ export const useMemoStore = create<MemoStore>((set) => ({
   setIsSearching: (isSearching) => set({ isSearching }),
   setRagAnswer: (answer) => set({ ragAnswer: answer }),
   setIsModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
+  setIsSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
 }));
