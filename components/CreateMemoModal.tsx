@@ -54,7 +54,7 @@ export function CreateMemoModal() {
       formData.append('folder', folder);
       if (subfolder) formData.append('subfolder', subfolder);
 
-      const res = await fetch('/api/memos', {
+      const res = await fetch('/api/memos/create', {
         method: 'POST',
         body: formData,
       });

@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@upstash/redis": "^1.37.0",
     "@vercel/blob": "^2.3.1",
     "chromadb": "^3.4.0",
     "langchain": "^1.2.36",

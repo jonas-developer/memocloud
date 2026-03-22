@@ -1,92 +1,99 @@
-import fs from 'fs';
-import path from 'path';
-import { Memo, SearchResult } from './types';
+import { Redis } from '@upstash/redis';
 import { generateEmbedding } from './openai';
+import { Memo, SearchResult, FolderStructure } from './types';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'memos.json');
+// Initialize Upstash Redis
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || 'https://better-crab-81351.upstash.io',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
 
-// Initialize data directory
-const dataDir = path.dirname(DATA_FILE);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+const MEMOS_KEY = 'memocloud:memos';
 
-export function loadMemos(): Memo[] {
+// Cosine similarity search
+const cosineSimilarity = (a: number[], b: number[]): number => {
+  const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+  return dotProduct / (magA * magB);
+};
+
+export async function loadMemos(): Promise<Memo[]> {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf-8');
-      return JSON.parse(data);
-    }
+    const data = await redis.get(MEMOS_KEY);
+    return (data as Memo[]) || [];
   } catch (error) {
     console.error('Error loading memos:', error);
+    return [];
   }
-  return [];
 }
 
-export function saveMemos(memos: Memo[]): void {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(memos, null, 2));
+export async function saveMemos(memos: Memo[]): Promise<void> {
+  await redis.set(MEMOS_KEY, JSON.stringify(memos));
 }
 
 export async function searchMemos(query: string, limit = 10): Promise<SearchResult[]> {
-  const memos = loadMemos();
+  const memos = await loadMemos();
   
   if (memos.length === 0) return [];
   
   const queryEmbedding = await generateEmbedding(query);
   
-  // Calculate cosine similarity
-  const similarity = (a: number[], b: number[]): number => {
-    const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
-    const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
-    const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
-    return dotProduct / (magA * magB);
-  };
-  
   const results = memos
     .map((memo) => ({
       ...memo,
-      score: memo.embedding ? similarity(queryEmbedding, memo.embedding) : 0,
+      score: memo.embedding ? cosineSimilarity(queryEmbedding, memo.embedding) : 0,
     }))
     .filter((m) => m.embedding)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
   
+  // Remove embedding from results (don't send to client)
   return results.map(({ embedding, ...rest }) => rest as SearchResult);
 }
 
-export async function addMemo(memo: { title: string; content: string; source: 'upload' | 'bookmark' | 'note'; url?: string; fileType?: string; fileUrl?: string; category: string; folder: string; subfolder?: string; embedding?: number[] }): Promise<Memo> {
-  const memos = loadMemos();
+export async function addMemo(memo: { 
+  title: string; 
+  content: string; 
+  source: 'upload' | 'bookmark' | 'note'; 
+  url?: string; 
+  fileType?: string; 
+  fileUrl?: string; 
+  category: string; 
+  folder: string; 
+  subfolder?: string; 
+  embedding?: number[] 
+}): Promise<Memo> {
+  const memos = await loadMemos();
   
   const newMemo: Memo = {
     ...memo,
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
-    embedding: memo.embedding || await generateEmbedding(memo.title + ' ' + memo.content),
   };
   
   memos.push(newMemo);
-  saveMemos(memos);
+  await saveMemos(memos);
   
   return newMemo;
 }
 
-export function getMemo(id: string): Memo | undefined {
-  const memos = loadMemos();
-  return memos.find((m) => m.id === id);
+export function getMemo(id: string): Promise<Memo | undefined> {
+  return loadMemos().then(memos => memos.find((m) => m.id === id));
 }
 
-export function deleteMemo(id: string): boolean {
-  const memos = loadMemos();
+export async function deleteMemo(id: string): Promise<boolean> {
+  const memos = await loadMemos();
   const index = memos.findIndex((m) => m.id === id);
   if (index === -1) return false;
   
   memos.splice(index, 1);
-  saveMemos(memos);
+  await saveMemos(memos);
   return true;
 }
 
-export function getMemosByFolder(category: string, folder?: string, subfolder?: string): Memo[] {
-  const memos = loadMemos();
+export async function getMemosByFolder(category: string, folder?: string, subfolder?: string): Promise<Memo[]> {
+  const memos = await loadMemos();
   return memos.filter((m) => {
     if (m.category !== category) return false;
     if (folder && m.folder !== folder) return false;
