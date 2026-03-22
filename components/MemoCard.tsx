@@ -1,12 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import { Memo } from '@/lib/types';
+import { useMemoStore } from '@/stores/memoStore';
 
 interface MemoCardProps {
   memo: Memo;
 }
 
 export function MemoCard({ memo }: MemoCardProps) {
+  const { removeMemo } = useMemoStore();
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -20,23 +25,45 @@ export function MemoCard({ memo }: MemoCardProps) {
 
   const getSourceIcon = (source: string) => {
     switch (source) {
-      case 'upload':
-        return '📄';
-      case 'bookmark':
-        return '🔗';
-      case 'note':
-        return '📝';
-      default:
-        return '📄';
+      case 'upload': return '📄';
+      case 'bookmark': return '🔗';
+      case 'note': return '📝';
+      default: return '📄';
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Delete this memo?')) return;
+    
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/memos/${memo.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        removeMemo(memo.id);
+      }
+    } catch (error) {
+      console.error('Error deleting memo:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
+    <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors group">
       <div className="flex items-start gap-3">
         <span className="text-xl">{getSourceIcon(memo.source)}</span>
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-zinc-100 truncate">{memo.title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-medium text-zinc-100 truncate">{memo.title}</h3>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded transition-all text-red-400 hover:text-red-300"
+              title="Delete memo"
+            >
+              {isDeleting ? '⏳' : '🗑️'}
+            </button>
+          </div>
           <p className="text-sm text-zinc-500 mt-1 line-clamp-2">{memo.content}</p>
           
           <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
@@ -58,7 +85,7 @@ export function MemoCard({ memo }: MemoCardProps) {
                   rel="noopener noreferrer"
                   className="text-cyan-400 hover:text-cyan-300 truncate max-w-[200px]"
                 >
-                  📥 Download file
+                  📥 Download
                 </a>
               )}
             </div>
