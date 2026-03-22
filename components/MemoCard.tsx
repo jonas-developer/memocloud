@@ -11,6 +11,7 @@ interface MemoCardProps {
 export function MemoCard({ memo }: MemoCardProps) {
   const { removeMemo } = useMemoStore();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -48,6 +49,8 @@ export function MemoCard({ memo }: MemoCardProps) {
     }
   };
 
+  const isLong = memo.content.length > 200;
+
   return (
     <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors group">
       <div className="flex items-start gap-3">
@@ -64,7 +67,20 @@ export function MemoCard({ memo }: MemoCardProps) {
               {isDeleting ? '⏳' : '🗑️'}
             </button>
           </div>
-          <p className="text-sm text-zinc-500 mt-1 line-clamp-2">{memo.content}</p>
+          
+          <div className="relative">
+            <p className={`text-sm text-zinc-500 mt-1 ${isLong && !isExpanded ? 'line-clamp-2' : ''}`}>
+              {memo.content}
+            </p>
+            {isLong && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-xs text-indigo-400 hover:text-indigo-300 mt-1"
+              >
+                {isExpanded ? 'Show less' : 'Read more...'}
+              </button>
+            )}
+          </div>
           
           <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
             <div className="flex items-center gap-2">
