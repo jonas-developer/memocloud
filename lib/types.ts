@@ -1,3 +1,9 @@
+export interface MemoChunk {
+  id: string;
+  content: string;
+  embedding: number[];
+}
+
 export interface Memo {
   id: string;
   title: string;
@@ -10,7 +16,10 @@ export interface Memo {
   folder: string;
   subfolder?: string;
   createdAt: string;
+  // Legacy single embedding (for backward compatibility)
   embedding?: number[];
+  // New chunked embeddings
+  chunks?: MemoChunk[];
 }
 
 export interface SearchResult {

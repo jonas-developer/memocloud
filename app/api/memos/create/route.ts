@@ -3,10 +3,8 @@ import { put } from '@vercel/blob';
 import { v4 as uuidv4 } from 'uuid';
 import { addMemo } from '@/lib/db';
 import { generateEmbedding } from '@/lib/openai';
+import { splitText } from '@/lib/splitter';
 import * as cheerio from 'cheerio';
-import * as fs from 'fs';
-import * as path from 'path';
-import os from 'os';
 
 export const runtime = 'nodejs';
 
@@ -112,10 +110,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate embedding
-    const embedding = await generateEmbedding(title + ' ' + extractedContent);
+    // Split content into chunks using LangChain splitter
+    const chunks = await splitText(extractedContent);
+    
+    // Generate embeddings for each chunk
+    const chunkEmbeddings = await Promise.all(
+      chunks.map(async (chunk) => {
+        const embedding = await generateEmbedding(chunk);
+        return {
+          id: uuidv4(),
+          content: chunk,
+          embedding,
+        };
+      })
+    );
 
-    // Create memo
+    // Generate a single embedding for the full content (for backward compatibility)
+    const fullEmbedding = await generateEmbedding(title + ' ' + extractedContent);
+
+    // Create memo with chunks
     const newMemo = await addMemo({
       title,
       content: extractedContent,
@@ -126,7 +139,8 @@ export async function POST(request: NextRequest) {
       category,
       folder,
       subfolder: subfolder || undefined,
-      embedding,
+      embedding: fullEmbedding,
+      chunks: chunkEmbeddings,
     });
 
     return NextResponse.json(newMemo, { status: 201 });

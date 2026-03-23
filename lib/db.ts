@@ -1,6 +1,6 @@
 import { Redis } from '@upstash/redis';
 import { generateEmbedding } from './openai';
-import { Memo, SearchResult, FolderStructure } from './types';
+import { Memo, MemoChunk, SearchResult } from './types';
 
 // Initialize Upstash Redis
 const redis = new Redis({
@@ -39,17 +39,44 @@ export async function searchMemos(query: string, limit = 10): Promise<SearchResu
   
   const queryEmbedding = await generateEmbedding(query);
   
+  // Score each memo based on best chunk match or full content
   const results = memos
-    .map((memo) => ({
-      ...memo,
-      score: memo.embedding ? cosineSimilarity(queryEmbedding, memo.embedding) : 0,
-    }))
-    .filter((m) => m.embedding)
+    .map((memo) => {
+      let bestScore = 0;
+      let bestContent = memo.content;
+      
+      // Check chunk embeddings first (more precise)
+      if (memo.chunks && memo.chunks.length > 0) {
+        for (const chunk of memo.chunks) {
+          const score = cosineSimilarity(queryEmbedding, chunk.embedding);
+          if (score > bestScore) {
+            bestScore = score;
+            bestContent = chunk.content;
+          }
+        }
+      }
+      
+      // Also check full content embedding
+      if (memo.embedding) {
+        const score = cosineSimilarity(queryEmbedding, memo.embedding);
+        if (score > bestScore) {
+          bestScore = score;
+          bestContent = memo.content;
+        }
+      }
+      
+      return {
+        ...memo,
+        score: bestScore,
+        content: bestContent,
+      };
+    })
+    .filter((m) => m.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
   
-  // Remove embedding from results (don't send to client)
-  return results.map(({ embedding, ...rest }) => rest as SearchResult);
+  // Remove embeddings from results (don't send to client)
+  return results.map(({ embedding, chunks, ...rest }) => rest as SearchResult);
 }
 
 export async function addMemo(memo: { 
@@ -62,7 +89,8 @@ export async function addMemo(memo: {
   category: string; 
   folder: string; 
   subfolder?: string; 
-  embedding?: number[] 
+  embedding?: number[];
+  chunks?: MemoChunk[];
 }): Promise<Memo> {
   const memos = await loadMemos();
   
