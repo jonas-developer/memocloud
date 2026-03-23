@@ -23,6 +23,12 @@ Your personal knowledge base with semantic search and Retrieval-Augmented Genera
 
 ---
 
+## Architecture
+
+![Architecture](public/architecture.png)
+
+---
+
 ## Tech Stack
 
 - **Framework:** Next.js 15 (App Router)
