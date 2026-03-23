@@ -16,6 +16,7 @@ Your personal knowledge base with semantic search and Retrieval-Augmented Genera
 ## Features
 
 - **Multiple Input Sources** — Upload PDF/DOCX files, save bookmarks, or write direct notes
+- **Smart Chunking** — Content is split into semantic chunks using LangChain's RecursiveCharacterTextSplitter for more precise search results
 - **Folder Organization** — Hierarchical organization with Category → Folder → Subfolder
 - **Semantic Search** — Search by meaning, not just exact keywords, using OpenAI embeddings
 - **RAG Mode** — Get AI-generated answers with context from your knowledge base
@@ -35,6 +36,7 @@ Your personal knowledge base with semantic search and Retrieval-Augmented Genera
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **AI:** OpenAI (text-embedding-3-small, GPT-4o-mini)
+- **Text Processing:** LangChain (RecursiveCharacterTextSplitter)
 - **Storage:** Vercel Blob (file uploads)
 - **Database:** Upstash Redis (persistent storage for memos & embeddings)
 - **State:** Zustand
