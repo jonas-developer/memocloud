@@ -4,6 +4,36 @@ import { v4 as uuidv4 } from 'uuid';
 import { addMemo } from '@/lib/db';
 import { generateEmbedding } from '@/lib/openai';
 import * as cheerio from 'cheerio';
+import * as fs from 'fs';
+import * as path from 'path';
+import os from 'os';
+
+export const runtime = 'nodejs';
+
+async function extractTextFromFile(file: File): Promise<string> {
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  const buffer = Buffer.from(await file.arrayBuffer());
+  
+  if (ext === 'pdf') {
+    // @ts-ignore - pdf-parse type issue
+    const pdfParse = (await import('pdf-parse')).default;
+    const data = await pdfParse(buffer);
+    return data.text || '';
+  }
+  
+  if (ext === 'docx') {
+    // Dynamic import mammoth
+    const mammoth = await import('mammoth');
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value || '';
+  }
+  
+  if (ext === 'txt' || ext === 'md') {
+    return buffer.toString('utf-8');
+  }
+  
+  return '';
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,8 +72,17 @@ export async function POST(request: NextRequest) {
       
       fileUrl = blob.url;
 
+      // Extract text from file if not provided
       if (!extractedContent) {
-        extractedContent = `[Uploaded file: ${file.name}] (Content extraction will happen on download)`;
+        try {
+          extractedContent = await extractTextFromFile(file);
+          if (!extractedContent.trim()) {
+            extractedContent = `[Uploaded file: ${file.name}] (Could not extract text)`;
+          }
+        } catch (e) {
+          console.error('Failed to extract text:', e);
+          extractedContent = `[Uploaded file: ${file.name}] (Extraction failed)`;
+        }
       }
     }
 
@@ -61,19 +100,11 @@ export async function POST(request: NextRequest) {
         // Remove scripts, styles, nav, footer, etc.
         $('script, style, nav, footer, header, aside, noscript, iframe').remove();
         
-        // Get title from page title tag or og:title
-        const pageTitle = $('title').text() || $('meta[property="og:title"]').attr('content') || '';
-        
         // Get main content - prefer article, main, or body
         let text = $('article').text() || $('main').text() || $('body').text();
         
         // Clean up whitespace
         text = text.replace(/\s+/g, ' ').trim().slice(0, 10000);
-        
-        // Use page title if no custom title provided
-        if (!title && pageTitle) {
-          // Would need to handle this differently, but for now use URL as fallback
-        }
         
         extractedContent = text;
       } catch (e) {
