@@ -61,7 +61,7 @@ export function MemoCard({ memo }: MemoCardProps) {
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded transition-all text-red-400 hover:text-red-300"
+              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded transition-all text-red-400 hover:text-red-300 cursor-pointer"
               title="Delete memo"
             >
               {isDeleting ? '⏳' : '🗑️'}
