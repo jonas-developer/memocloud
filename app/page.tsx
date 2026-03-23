@@ -79,7 +79,7 @@ export default function Home() {
               {searchQuery && (
                 <button
                   onClick={clearSearch}
-                  className="text-sm text-zinc-500 hover:text-zinc-300"
+                  className="text-sm text-zinc-500 hover:text-zinc-300 cursor-pointer"
                 >
                   Clear search ↩
                 </button>

@@ -72,7 +72,7 @@ export function SearchBar() {
         <button
           onClick={handleSearch}
           disabled={isLoading || !searchQuery.trim()}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors"
+          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors cursor-pointer"
         >
           {isLoading ? 'Searching...' : 'Search'}
         </button>

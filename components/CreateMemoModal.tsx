@@ -79,7 +79,7 @@ export function CreateMemoModal() {
           <h2 className="text-xl font-semibold text-zinc-100">Create New Memo</h2>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
           >
             <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -94,7 +94,7 @@ export function CreateMemoModal() {
                 key={s}
                 type="button"
                 onClick={() => setSource(s)}
-                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                   source === s
                     ? 'bg-indigo-600 text-white'
                     : 'text-zinc-400 hover:text-zinc-200'
@@ -204,14 +204,14 @@ export function CreateMemoModal() {
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="px-4 py-2 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors cursor-pointer"
             >
               {isLoading ? 'Creating...' : 'Create Memo'}
             </button>
